@@ -10,7 +10,7 @@ class ExpenseForm(forms.ModelForm):
         model=Expense
         fields=['name','amount','interest_rate','date','end_date','long_term']
         
-        widges= {
+        widgets= {
             'name':forms.TextInput(attrs={'class':'form-control'}),
             'amount':forms.NumberInput(attrs={'class':'form-control'}),
             'date':forms.DateInput(attrs={'class':'form-control','type':'date'}),
