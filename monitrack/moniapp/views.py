@@ -24,5 +24,23 @@ def register(request):
         form=UserCreationForm()
     return render(request,'registration/registration.html',{'form':form})
 
-def ExpenseListView(request):
+class ExpenseListView(FormView):
+    template_name='moniapp/expenses_list.html'
+    form_class=ExpenseForm
+    success_url='/'
+    
+    def form_valid(self, form):
+        account,_=Account.objects.get_or_create(user=self.request.user)
+        expense=Expense(
+            name=form.cleaned_date['name'],
+            amount=form.cleaned_date['amount'],
+            interest_rate=form.cleaned_date['interest_rate'],
+            date=form.cleaned_date['date'],
+            long_term=form.cleaned_date['long_term'],
+            end_date=form.cleaned_date['end_date'],
+            user=self.request.user
+        )
+        expense.save()
+        
+    
     
