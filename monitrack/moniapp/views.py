@@ -9,6 +9,11 @@ from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
 from django.views.generic import ListView 
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from django.utils.safestring import mark_safe
+from django.db.models import Sum,Count,F
+import plotly.express as px 
+from plotly.graph_objs import*
 
 # Create your views here.
 def home(request):
@@ -41,6 +46,15 @@ class ExpenseListView(FormView):
             user=self.request.user
         )
         expense.save()
+        account.expense_list.add(expense)
+        return super().form_valid(form)
+    
+    def get_context_data(self, **kwargs):
+        context=super().get_context_data(**kwargs)
+        user=self.request.user
+        accounts=Account.objects.filter(user=user)
+            
+        
         
     
     
