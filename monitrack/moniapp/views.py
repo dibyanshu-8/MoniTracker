@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.forms import UserCreationForm
 from moniapp import models
 from.models import Account,Expense
+from.forms import ExpenseForm
 from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
 from django.views.generic import ListView 
