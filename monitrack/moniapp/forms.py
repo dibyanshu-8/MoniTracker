@@ -28,9 +28,9 @@ class ExpenseForm(forms.ModelForm):
                 interest_rate=cleaned_data.get("interest_rate")
                 end_date=cleaned_data.get("end_date")
                 amount=cleaned_data.get("amount")
-                cleaned_data("long_term")=True
+                cleaned_data["long_term"]=True
             else:
-                cleaned_data("end_date")=None
-                cleaned_data("interest_rate")=None
+                cleaned_data["end_date"]=None
+                cleaned_data["interest_rate"]=None
             return cleaned_data    
             
