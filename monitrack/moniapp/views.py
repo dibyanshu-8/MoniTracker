@@ -30,6 +30,21 @@ def register(request):
         form=UserCreationForm()
     return render(request,'registration/registration.html',{'form':form})
 
+def generate_graph(data):
+    fig=px.bar(data,x='months',y='expenses',title='Monthly Expenses')
+    fig.update_layout(
+        xaxis=dict(rangeslider=dict(visible=True)),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font_color='rgba(0,0,0,1)',
+    )
+    fig.update_traces(marker_color='#008c41')
+
+    graph_json=fig.to_json()
+
+    return graph_json
+
+
 class ExpenseListView(FormView):
     template_name='moniapp/expenses_list.html'
     form_class=ExpenseForm
@@ -54,6 +69,82 @@ class ExpenseListView(FormView):
         context=super().get_context_data(**kwargs)
         user=self.request.user
         accounts=Account.objects.filter(user=user)
+        
+        expense_data={}
+        expense_data_graph={}
+        
+        for account in accounts:
+            expenses=account.expense_list.all()
+            for expense in expenses:
+                if expense.long_term and expense.monthly_expenses:
+                    current_date=expense_data
+                    while current_date<=expense.end_date:
+                        year_month=current_date.strftime('%Y-%m')
+                        if year_month not in expense_data_graph:
+                            expense_data_graph[year_month]=[]
+                            
+                        expense_data_graph[year_month].append({
+                            'name':expense.name,
+                            'amount':expense.monthly_expenses,
+                            'date':expense.date,
+                            'end_date':expense.end_date,
+                            })
+                        current_date=current_date+relativedelta(months=1)
+                else:
+                            year_month=expense.date.strftime('%Y-%m')
+                            if year_month not in expense_data_graph:
+                                expense_data_graph[year_month]=[]
+                                
+                            expense_data_graph[year_month].append({
+                                'name':expense.name,
+                                'amount':expense.amount,
+                                'date':expense.date,
+                            })
+                    
+        for account in accounts:
+            expenses=account.expense_list.all()
+            for expense in expenses:
+                if expense.long_term and expense.monthly_expense:
+                    current_date=expense.date
+                    year_month=current_date.strftime('%Y-%m')
+                    if year_month not in expense_data:
+                        expense_data[year_month]=[]
+
+                    expense_data[year_month].append({
+                        'name':expense.name,
+                        'amount':expense.monthly_expense,
+                        'date':current_date,
+                        'end_date':expense.end_date,
+                        'long_term':expense.long_term,
+                    })
+
+                        
+                    current_date=current_date+relativedelta(months=1)
+                else:
+                    year_month=expense.date.strftime('%Y-%m')
+                    if year_month not in expense_data:
+                        expense_data[year_month]=[]
+
+                    expense_data[year_month].append({
+                        'name':expense.name,
+                        'amount':expense.amount,
+                        'date':expense.date,
+                    })
+                    
+        aggregated_data=[{'year_month':key,'expenses':sum(item['amount'] for item in value)} for key,value in expense_data_graph.items()]
+        context['expense_data']=expense_data
+        context['aggregated_data']=aggregated_data
+
+        graph_data={
+            'months':[item['year_month'] for item in aggregated_data],
+            'expenses':[item['expenses'] for item in aggregated_data]
+        }
+        graph_data['chart']=generate_graph(graph_data)
+        context['graph_data']=mark_safe(graph_data['chart'])  
+
+        return context
+
+                    
             
         
         
